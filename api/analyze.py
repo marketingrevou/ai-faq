@@ -37,6 +37,7 @@ PENTING: Setiap workflow WAJIB memiliki semua 8 field. Jangan lewatkan langkah_a
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
+        text_content = ""
         try:
             length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(length)
@@ -59,7 +60,7 @@ Berikan tepat 3 rekomendasi workflow automation yang paling relevan untuk profil
 
             response = client.messages.create(
                 model="claude-haiku-4-5-20251001",
-                max_tokens=4096,
+                max_tokens=2048,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_profile}],
             )
@@ -70,11 +71,18 @@ Berikan tepat 3 rekomendasi workflow automation yang paling relevan untuk profil
                 self._json({"error": "AI tidak mengembalikan respons. Coba lagi."}, 500)
                 return
 
-            workflows = json.loads(text_content)
+            # Strip markdown code block wrappers if model adds them
+            cleaned = text_content.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.split("\n", 1)[-1]
+                cleaned = cleaned.rsplit("```", 1)[0].strip()
+
+            workflows = json.loads(cleaned)
             self._json({"workflows": workflows}, 200)
 
         except json.JSONDecodeError as e:
-            self._json({"error": f"Gagal memproses respons AI: {str(e)}"}, 500)
+            preview = text_content[:300] if text_content else "(empty)"
+            self._json({"error": f"Gagal parse JSON. Raw: {preview}"}, 500)
         except Exception as e:
             self._json({"error": f"Terjadi kesalahan: {str(e)}"}, 500)
 
