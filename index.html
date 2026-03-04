@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temukan Workflow Automation Anda</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --gray-100: #f1f3f4;
+      --gray-200: #e8eaed;
+      --gray-400: #bdc1c6;
+      --gray-500: #9aa0a6;
+      --gray-700: #5f6368;
+      --gray-900: #202124;
+      --red: #ea4335;
+      --green: #34a853;
+      --yellow: #fbbc04;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #fff;
+      color: var(--gray-900);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5vh 1rem 6rem;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-area {
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 2.5rem;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--gray-200);
+      border-radius: 28px;
+      box-shadow: 0 1px 6px rgba(32,33,36,.18);
+      padding: .85rem 1.4rem;
+      gap: .75rem;
+      background: #fff;
+    }
+
+    .search-icon { color: var(--gray-500); flex-shrink: 0; }
+
+    .search-text {
+      color: var(--gray-700);
+      font-size: 1rem;
+      flex: 1;
+    }
+
+    /* ── QUESTIONS FEED ── */
+    #feed {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── ANSWERED ROW ── */
+    .q-answered {
+      display: flex;
+      align-items: baseline;
+      gap: .6rem;
+      padding: .6rem 0;
+      border-bottom: 1px solid var(--gray-200);
+      animation: fadeIn .25s ease;
+    }
+
+    .q-answered .q-label {
+      font-size: .82rem;
+      color: var(--gray-500);
+      flex-shrink: 0;
+      min-width: 120px;
+    }
+
+    .q-answered .q-value {
+      font-size: .9rem;
+      color: var(--gray-900);
+      font-weight: 500;
+    }
+
+    /* ── ACTIVE QUESTION ── */
+    .q-active {
+      padding: 1.5rem 0 .5rem;
+      animation: slideUp .3s ease;
+    }
+
+    .q-active .q-text {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--gray-900);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .q-active .multi-hint {
+      font-size: .78rem;
+      color: var(--gray-500);
+      margin-bottom: .75rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .chip {
+      border: 1.5px solid var(--gray-200);
+      border-radius: 20px;
+      padding: .4rem .85rem;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: all .15s;
+      background: #fff;
+      color: var(--gray-900);
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--blue); color: var(--blue); }
+    .chip.selected {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .btn-confirm {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: .5rem 1.4rem;
+      font-size: .88rem;
+      cursor: pointer;
+      transition: opacity .15s;
+      margin-top: .25rem;
+    }
+    .btn-confirm:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-confirm:not(:disabled):hover { opacity: .88; }
+
+    /* ── LOADING ── */
+    .loading-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: 1.5rem 0;
+      animation: fadeIn .3s ease;
+    }
+
+    .dots {
+      display: flex;
+      gap: .35rem;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .dot:nth-child(1) { background: var(--blue);   animation-delay: 0s; }
+    .dot:nth-child(2) { background: var(--red);    animation-delay: .2s; }
+    .dot:nth-child(3) { background: var(--yellow); animation-delay: .4s; }
+    .dot:nth-child(4) { background: var(--green);  animation-delay: .6s; }
+
+    .loading-label {
+      font-size: .9rem;
+      color: var(--gray-700);
+    }
+
+    /* ── RESULTS ── */
+    .results-section {
+      width: 100%;
+      max-width: 560px;
+      margin-top: 1rem;
+      animation: slideUp .35s ease;
+    }
+
+    .results-label {
+      font-size: .78rem;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 1rem;
+    }
+
+    .workflow-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: .75rem;
+      background: #fff;
+      transition: box-shadow .2s;
+    }
+    .workflow-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: .5rem;
+      margin-bottom: .5rem;
+    }
+
+    .card-name {
+      font-size: .98rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      font-size: .7rem;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: .2rem .5rem;
+      white-space: nowrap;
+    }
+    .badge-mudah    { background: #e6f4ea; color: #137333; }
+    .badge-menengah { background: #fef7e0; color: #b06000; }
+    .badge-lanjutan { background: #fce8e6; color: #c5221f; }
+
+    .card-desc {
+      font-size: .86rem;
+      color: var(--gray-700);
+      line-height: 1.5;
+      margin-bottom: .85rem;
+    }
+
+    .card-benefits {
+      list-style: none;
+      margin-bottom: .85rem;
+    }
+    .card-benefits li {
+      font-size: .84rem;
+      color: var(--gray-700);
+      padding: .15rem 0;
+      display: flex;
+      gap: .4rem;
+    }
+    .card-benefits li::before { content: "✅"; flex-shrink: 0; }
+
+    .card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .5rem;
+      font-size: .8rem;
+      color: var(--gray-700);
+    }
+
+    .tool-tag {
+      background: var(--gray-100);
+      border-radius: 4px;
+      padding: .18rem .5rem;
+      font-size: .76rem;
+      color: var(--gray-700);
+    }
+
+    .error-box {
+      background: #fce8e6;
+      border: 1px solid #f28b82;
+      border-radius: 8px;
+      padding: 1rem;
+      color: #c5221f;
+      font-size: .88rem;
+    }
+
+    .restart-btn {
+      display: inline-block;
+      margin-top: 2rem;
+      font-size: .85rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .restart-btn:hover { color: var(--gray-700); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(.65); opacity: .5; }
+      40%           { transform: scale(1);   opacity: 1; }
+    }
+
+    /* ── TEXTAREA QUESTION ── */
+    .q-textarea {
+      width: 100%;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 12px;
+      padding: .75rem 1rem;
+      font-size: .88rem;
+      font-family: inherit;
+      color: var(--gray-900);
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: .75rem;
+      transition: border-color .15s;
+      outline: none;
+    }
+    .q-textarea:focus { border-color: var(--blue); }
+
+    .btn-skip {
+      background: none;
+      border: none;
+      font-size: .82rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      margin-left: .75rem;
+      padding: 0;
+    }
+    .btn-skip:hover { color: var(--gray-700); }
+
+    /* ── CARD SCENARIO & STEPS ── */
+    .card-scenario {
+      background: #e8f0fe;
+      border-left: 3px solid var(--blue);
+      border-radius: 0 6px 6px 0;
+      padding: .6rem .85rem;
+      font-size: .84rem;
+      color: var(--gray-700);
+      font-style: italic;
+      margin-bottom: .85rem;
+      line-height: 1.5;
+    }
+
+    .card-steps {
+      margin-bottom: .85rem;
+    }
+    .card-steps-label {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .4rem;
+    }
+    .card-steps ol {
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+    .card-steps li {
+      font-size: .84rem;
+      color: var(--gray-700);
+      padding: .15rem 0;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="search-area">
+  <div class="search-bar">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <span class="search-text">Temukan workflow automation untuk bisnis Anda...</span>
+  </div>
+</div>
+
+<div id="feed"></div>
+
+<script>
+  const profesiToolsMap = {
+    "HR & Rekrutmen":         ["WhatsApp", "Gmail / Outlook", "Google Sheets", "Notion", "Slack", "Trello / Asana", "Zoom / Google Meet", "LinkedIn", "BambooHR / Mekari", "Belum pakai tools khusus"],
+    "Marketing & Iklan":      ["Instagram / Meta Ads", "Gmail", "Google Sheets", "Canva", "Mailchimp / Klaviyo", "Notion", "Google Analytics", "TikTok Ads", "Hootsuite / Buffer", "Belum pakai tools khusus"],
+    "Sales & CRM":            ["WhatsApp", "Gmail / Outlook", "Google Sheets", "HubSpot / Salesforce", "Trello / Asana", "Zoom / Google Meet", "Notion", "LinkedIn", "Belum pakai tools khusus"],
+    "Finance & Akuntansi":    ["Google Sheets / Excel", "Gmail", "Jurnal / Accurate / QuickBooks", "Xero", "Google Drive", "Notion", "Belum pakai tools khusus"],
+    "Operasional":            ["WhatsApp", "Gmail", "Google Sheets", "Trello / Asana", "Notion", "Slack", "Zoom / Google Meet", "Belum pakai tools khusus"],
+    "E-commerce":             ["WhatsApp", "Gmail", "Tokopedia / Shopee", "Google Sheets", "Instagram / Meta Ads", "Canva", "Lazada", "TikTok Shop", "Belum pakai tools khusus"],
+    "Konsultan":              ["Gmail", "Google Sheets", "Notion", "Zoom / Google Meet", "Slack", "Trello / Asana", "LinkedIn", "Belum pakai tools khusus"],
+    "Pendidikan":             ["Gmail", "Google Classroom", "Google Sheets", "Zoom / Google Meet", "WhatsApp", "Canva", "Notion", "Belum pakai tools khusus"],
+    "Properti & Real Estate": ["WhatsApp", "Gmail", "Google Sheets", "Instagram / Meta Ads", "Canva", "Zoom / Google Meet", "Belum pakai tools khusus"],
+    "Kesehatan & Klinik":     ["WhatsApp", "Gmail", "Google Sheets", "Google Forms", "Zoom / Google Meet", "Belum pakai tools khusus"],
+    "Restoran & F&B":         ["WhatsApp", "Google Sheets", "Instagram / Meta Ads", "GoPay / OVO / Dana", "GoFood / GrabFood", "POS System", "Belum pakai tools khusus"],
+    "Startup & Tech":         ["Gmail", "Slack", "Notion", "GitHub / GitLab", "Jira / Linear", "Google Sheets", "Airtable", "Figma", "Belum pakai tools khusus"],
+    "Logistik & Pengiriman":  ["WhatsApp", "Gmail", "Google Sheets", "JNE / J&T / SiCepat", "Tokopedia / Shopee", "Belum pakai tools khusus"],
+    "Event Organizer / EO":   ["WhatsApp", "Gmail", "Google Sheets", "Instagram / Meta Ads", "Canva", "Trello / Asana", "Zoom / Google Meet", "Belum pakai tools khusus"],
+    "Hukum & Legal":          ["Gmail", "Google Docs", "Google Sheets", "Zoom / Google Meet", "Notion", "Belum pakai tools khusus"],
+    "Lainnya":                ["WhatsApp / WhatsApp Business", "Gmail / Outlook", "Google Sheets / Excel", "Tokopedia / Shopee", "Instagram / Meta Ads", "Notion", "Trello / Asana", "Airtable", "Slack", "Belum pakai tools khusus"]
+  };
+
+  const profesiTantanganMap = {
+    "HR & Rekrutmen":         ["Screening & seleksi CV manual", "Onboarding karyawan baru", "Rekap absensi & lembur", "Follow-up kandidat interview", "Membuat kontrak & dokumen HR", "Koordinasi jadwal interview"],
+    "Marketing & Iklan":      ["Membuat & jadwalkan konten media sosial", "Rekap performa iklan & laporan", "Follow-up leads dari iklan", "Riset kompetitor & tren pasar", "Koordinasi konten dengan tim kreatif", "Analisis data kampanye"],
+    "Sales & CRM":            ["Follow-up leads & prospek baru", "Rekap pipeline & laporan penjualan", "Input data ke CRM", "Koordinasi demo & meeting klien", "Membuat proposal & penawaran", "Track target & komisi tim"],
+    "Finance & Akuntansi":    ["Input transaksi & rekonsiliasi", "Membuat laporan keuangan bulanan", "Rekap invoice & pembayaran", "Follow-up tagihan yang belum dibayar", "Audit & verifikasi data", "Pajak & pelaporan compliance"],
+    "Operasional":            ["Koordinasi antar departemen", "Rekap laporan harian/mingguan", "Monitoring KPI & performa", "Kelola vendor & supplier", "SOP & dokumentasi proses", "Approval & eskalasi masalah"],
+    "E-commerce":             ["Update stok & harga produk", "Balas pertanyaan & komplain pembeli", "Rekap pesanan & pengiriman", "Membuat konten produk & promo", "Laporan penjualan multi-platform", "Kelola retur & refund"],
+    "Konsultan":              ["Membuat proposal & laporan klien", "Riset & analisis data", "Follow-up klien & jadwal meeting", "Tracking deliverable & deadline", "Membuat presentasi", "Invoicing & billing"],
+    "Pendidikan":             ["Rekap nilai & progress siswa", "Komunikasi dengan orang tua/siswa", "Membuat materi & soal", "Jadwal pelajaran & ujian", "Laporan administrasi sekolah", "Absensi & kehadiran"],
+    "Properti & Real Estate": ["Follow-up prospek & leads", "Jadwalkan kunjungan properti", "Rekap listing & komisi", "Membuat marketing material", "Update portofolio properti", "Koordinasi dengan buyer & seller"],
+    "Kesehatan & Klinik":     ["Jadwal & konfirmasi appointment", "Rekap rekam medis pasien", "Follow-up hasil lab & tindak lanjut", "Laporan kunjungan & pendapatan", "Stok obat & alkes", "Komunikasi dengan pasien"],
+    "Restoran & F&B":         ["Rekap pesanan & omzet harian", "Kelola stok bahan baku", "Balas review & feedback pelanggan", "Jadwal karyawan & shift", "Laporan ke platform delivery", "Promo & loyalty program"],
+    "Startup & Tech":         ["Sprint planning & tracking", "Review kode & deployment", "Rekap bug & issue", "Komunikasi lintas tim", "Dokumentasi teknis", "Onboarding developer baru"],
+    "Logistik & Pengiriman":  ["Track & update status pengiriman", "Rekap order & resi harian", "Koordinasi dengan kurir & driver", "Laporan keterlambatan & retur", "Kelola armada & jadwal", "Invoice & pembayaran klien"],
+    "Event Organizer / EO":   ["Koordinasi vendor & venue", "Rekap budget & pengeluaran", "Follow-up klien & sponsor", "Buat rundown & timeline acara", "Koordinasi tim lapangan", "Post-event report & evaluasi"],
+    "Hukum & Legal":          ["Draft & review kontrak", "Tracking deadline dokumen", "Follow-up klien & kasus", "Riset hukum & regulasi", "Laporan billing & jam kerja", "Arsip & manajemen dokumen"],
+    "Lainnya":                ["Input data manual yang berulang", "Membuat laporan & rekap", "Follow-up customer / leads", "Kelola email & pesan masuk", "Koordinasi tim & task tracking", "Riset & pembuatan konten"]
+  };
+
+  const questions = [
+    {
+      id: "profesi",
+      text: "Apa profesi atau bidang usaha Anda?",
+      short: "Profesi",
+      multi: false,
+      options: ["HR & Rekrutmen", "Marketing & Iklan", "Sales & CRM", "Finance & Akuntansi", "Operasional", "E-commerce", "Konsultan", "Pendidikan", "Properti & Real Estate", "Kesehatan & Klinik", "Restoran & F&B", "Startup & Tech", "Logistik & Pengiriman", "Event Organizer / EO", "Hukum & Legal", "Lainnya"]
+    },
+    {
+      id: "ukuran_tim",
+      text: "Berapa besar tim atau bisnis Anda?",
+      short: "Ukuran tim",
+      multi: false,
+      options: ["Solo / Freelancer", "Tim kecil (2–10 orang)", "Menengah (11–50 orang)", "Besar (>50 orang)"]
+    },
+    {
+      id: "tantangan",
+      text: "Apa tantangan terbesar Anda sehari-hari?",
+      short: "Tantangan",
+      multi: false,
+      options: ["Input data manual yang berulang", "Membuat laporan & rekap", "Follow-up customer / leads", "Kelola email & pesan masuk", "Koordinasi tim & task tracking", "Riset & pembuatan konten"]
+    },
+    {
+      id: "tools",
+      text: "Tools apa yang sudah Anda gunakan?",
+      short: "Tools",
+      multi: true,
+      options: ["WhatsApp / WhatsApp Business", "Gmail / Outlook", "Google Sheets / Excel", "Tokopedia / Shopee", "Instagram / Meta Ads", "Notion", "Trello / Asana", "Airtable", "Slack", "Belum pakai tools khusus"]
+    },
+    {
+      id: "tech_level",
+      text: "Seberapa nyaman Anda dengan teknologi?",
+      short: "Level teknis",
+      multi: false,
+      options: ["Tidak teknis — butuh panduan langkah demi langkah", "Sedikit bisa — pernah pakai beberapa software", "Cukup familiar — bisa ikuti tutorial teknis", "Sangat teknis — bisa coding dan konfigurasi sendiri"]
+    },
+    {
+      id: "keinginan",
+      text: "Ada proses spesifik yang ingin Anda otomasi? (opsional)",
+      short: "Ingin otomasi",
+      type: "textarea",
+      placeholder: "Contoh: setiap hari saya harus copy-paste data dari email ke spreadsheet..."
+    }
+  ];
+
+  const answers = {};
+  let currentStep = 0;
+  const feed = document.getElementById("feed");
+
+  // Boot: show first question
+  appendActiveQuestion(0);
+
+  function getOptionsForQuestion(q) {
+    if (q.id === "tantangan") return profesiTantanganMap[answers.profesi] || q.options;
+    if (q.id === "tools")     return profesiToolsMap[answers.profesi]     || q.options;
+    return q.options;
+  }
+
+  function appendActiveQuestion(idx) {
+    const q = questions[idx];
+    if (q.type === "textarea") { appendTextareaQuestion(idx); return; }
+
+    const block = document.createElement("div");
+    block.className = "q-active";
+    block.id = `q-active-${idx}`;
+
+    block.innerHTML = `
+      <p class="q-text">${q.text}</p>
+      ${q.multi ? '<p class="multi-hint">Pilih semua yang sesuai</p>' : ""}
+      <div class="chips" id="chips-${idx}">
+        ${getOptionsForQuestion(q).map(opt => `
+          <div class="chip" data-val="${esc(opt)}"
+               onclick="pickChip(${idx}, this, ${q.multi})">
+            ${opt}
+          </div>`).join("")}
+      </div>
+      ${q.multi ? `<button class="btn-confirm" id="confirm-${idx}" disabled
+                           onclick="confirmMulti(${idx})">Lanjut →</button>` : ""}
+    `;
+
+    feed.appendChild(block);
+    block.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function appendTextareaQuestion(idx) {
+    const q = questions[idx];
+    const block = document.createElement("div");
+    block.className = "q-active";
+    block.id = `q-active-${idx}`;
+
+    block.innerHTML = `
+      <p class="q-text">${q.text}</p>
+      <textarea class="q-textarea" id="textarea-${idx}" placeholder="${q.placeholder || ""}"></textarea>
+      <div>
+        <button class="btn-confirm" onclick="confirmTextarea(${idx})">Lanjut →</button>
+        <button class="btn-skip" onclick="skipTextarea(${idx})">Lewati</button>
+      </div>
+    `;
+
+    feed.appendChild(block);
+    block.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function confirmTextarea(idx) {
+    const q = questions[idx];
+    const val = document.getElementById(`textarea-${idx}`).value.trim();
+    answers[q.id] = val;
+    advanceFrom(idx);
+  }
+
+  function skipTextarea(idx) {
+    const q = questions[idx];
+    answers[q.id] = "";
+    advanceFrom(idx);
+  }
+
+  function esc(s) {
+    return s.replace(/"/g, "&quot;").replace(/'/g, "\\'");
+  }
+
+  function pickChip(idx, el, multi) {
+    const q = questions[idx];
+
+    if (multi) {
+      el.classList.toggle("selected");
+      answers[q.id] = [...document.querySelectorAll(`#chips-${idx} .chip.selected`)]
+        .map(c => c.dataset.val);
+      const btn = document.getElementById(`confirm-${idx}`);
+      btn.disabled = answers[q.id].length === 0;
+    } else {
+      answers[q.id] = [el.dataset.val];
+      advanceFrom(idx);
+    }
+  }
+
+  function confirmMulti(idx) {
+    const q = questions[idx];
+    if (!answers[q.id] || answers[q.id].length === 0) return;
+    advanceFrom(idx);
+  }
+
+  function advanceFrom(idx) {
+    const q = questions[idx];
+    const block = document.getElementById(`q-active-${idx}`);
+
+    // Replace active block with answered row
+    const row = document.createElement("div");
+    row.className = "q-answered";
+    const displayValue = Array.isArray(answers[q.id])
+      ? answers[q.id].join(", ")
+      : (answers[q.id] || "Dilewati");
+    row.innerHTML = `
+      <span class="q-label">${q.short}</span>
+      <span class="q-value">${displayValue}</span>
+    `;
+    feed.replaceChild(row, block);
+
+    currentStep = idx + 1;
+
+    if (currentStep < questions.length) {
+      appendActiveQuestion(currentStep);
+    } else {
+      appendSubmit();
+    }
+  }
+
+  function appendSubmit() {
+    // Auto-submit immediately after last answer
+    appendLoading();
+    submitProfile();
+  }
+
+  function appendLoading() {
+    const el = document.createElement("div");
+    el.className = "loading-row";
+    el.id = "loading-row";
+    el.innerHTML = `
+      <div class="dots">
+        <div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div>
+      </div>
+      <span class="loading-label">Sedang mencari workflow terbaik untuk Anda...</span>
+    `;
+    feed.appendChild(el);
+    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  async function submitProfile() {
+    const flatAnswers = {};
+    Object.entries(answers).forEach(([k, v]) => {
+      flatAnswers[k] = Array.isArray(v) ? v.join(", ") : v;
+    });
+
+    try {
+      const res = await fetch("/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: flatAnswers })
+      });
+
+      const data = await res.json();
+      document.getElementById("loading-row")?.remove();
+
+      if (!res.ok) throw new Error(data.error || "Gagal mendapatkan rekomendasi");
+      renderResults(data.workflows);
+    } catch (err) {
+      document.getElementById("loading-row")?.remove();
+      renderError(err.message);
+    }
+  }
+
+  function renderResults(workflows) {
+    const section = document.createElement("div");
+    section.className = "results-section";
+
+    if (!workflows || workflows.length === 0) {
+      section.innerHTML = `<div class="error-box">Tidak ada workflow ditemukan. Silakan coba lagi.</div>`;
+      feed.appendChild(section);
+      return;
+    }
+
+    const badgeMap = { "Mudah": "badge-mudah", "Menengah": "badge-menengah", "Lanjutan": "badge-lanjutan" };
+
+    section.innerHTML = `
+      <p class="results-label">Rekomendasi workflow untuk Anda</p>
+      ${workflows.map(w => `
+        <div class="workflow-card">
+          <div class="card-top">
+            <div class="card-name">${w.nama}</div>
+            <span class="badge ${badgeMap[w.tingkat_kesulitan] || "badge-menengah"}">${w.tingkat_kesulitan}</span>
+          </div>
+          ${w.contoh_skenario ? `<div class="card-scenario">${w.contoh_skenario}</div>` : ""}
+          <p class="card-desc">${w.deskripsi}</p>
+          <ul class="card-benefits">
+            ${(w.manfaat || []).map(b => `<li>${b}</li>`).join("")}
+          </ul>
+          ${w.langkah_awal?.length ? `
+          <div class="card-steps">
+            <div class="card-steps-label">Mulai dari sini</div>
+            <ol>${w.langkah_awal.map(s => `<li>${s}</li>`).join("")}</ol>
+          </div>` : ""}
+          <div class="card-footer">
+            <span>⏰ ${w.estimasi_waktu_hemat}</span>
+            ${(w.tools_dibutuhkan || []).map(t => `<span class="tool-tag">${t}</span>`).join("")}
+          </div>
+        </div>`).join("")}
+      <button class="restart-btn" onclick="location.reload()">↺ Mulai ulang dengan profil berbeda</button>
+    `;
+
+    feed.appendChild(section);
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderError(msg) {
+    const section = document.createElement("div");
+    section.className = "results-section";
+    section.innerHTML = `
+      <div class="error-box">
+        <strong>Terjadi kesalahan:</strong><br>${msg}
+      </div>
+      <button class="restart-btn" onclick="location.reload()">↺ Coba lagi</button>
+    `;
+    feed.appendChild(section);
+    section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+</script>
+</body>
+</html>
