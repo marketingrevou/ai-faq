@@ -6,12 +6,12 @@ from anthropic import Anthropic
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 SYSTEM_PROMPT = """Anda adalah ahli automation workflow untuk profesional dan pebisnis Indonesia.
-Tugas Anda: menganalisis profil pengguna dan merekomendasikan 3-5 automation workflow yang relevan
+Tugas Anda: menganalisis profil pengguna dan merekomendasikan tepat 3 automation workflow yang relevan
 menggunakan n8n dan ChatGPT/OpenAI API.
 
 Aturan output:
 - Balas HANYA dengan JSON valid, tanpa markdown code block, tanpa teks tambahan
-- Format: array JSON dengan 3-5 objek workflow
+- Format: array JSON dengan tepat 3 objek workflow
 - Setiap workflow HARUS menggunakan n8n sebagai orchestrator dan ChatGPT/OpenAI sebagai AI engine
 - Rekomendasikan workflow yang benar-benar bisa diimplementasikan dengan tools yang user miliki
 - Gunakan Bahasa Indonesia yang natural dan mudah dipahami
@@ -55,7 +55,7 @@ class handler(BaseHTTPRequestHandler):
 - Level kenyamanan teknologi: {answers.get("tech_level", "Tidak disebutkan")}
 - Hal yang paling ingin diotomasi: {answers.get("keinginan") or "Tidak disebutkan"}
 
-Berikan 3-5 rekomendasi workflow automation yang paling relevan untuk profil ini."""
+Berikan tepat 3 rekomendasi workflow automation yang paling relevan untuk profil ini."""
 
             response = client.messages.create(
                 model="claude-haiku-4-5-20251001",
