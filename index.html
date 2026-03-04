@@ -53,11 +53,34 @@
 
     .search-icon { color: var(--gray-500); flex-shrink: 0; }
 
-    .search-text {
-      color: var(--gray-700);
-      font-size: 1rem;
+    .search-input {
       flex: 1;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--gray-900);
+      background: transparent;
     }
+    .search-input::placeholder { color: var(--gray-500); }
+    .search-input:disabled { color: var(--gray-700); }
+
+    .search-submit {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity .15s;
+    }
+    .search-submit:hover:not(:disabled) { opacity: .85; }
+    .search-submit:disabled { opacity: 0; pointer-events: none; }
 
     /* ── QUESTIONS FEED ── */
     #feed {
@@ -373,10 +396,6 @@
 </head>
 <body>
 
-<div style="margin-bottom:1.5rem;">
-  <img src="images/revou.png" alt="RevoU" style="width:56px;height:56px;border-radius:50%;" />
-</div>
-
 <div style="margin-bottom: 1.5rem;">
   <img src="/images/revou.png" alt="RevoU" style="width: 56px; height: 56px; border-radius: 50%;" />
 </div>
@@ -386,7 +405,15 @@
     <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
-    <span class="search-text">Temukan workflow automation untuk bisnis Anda...</span>
+    <input class="search-input" id="profesi-input" type="text"
+           placeholder="Ketik profesi atau bidang usaha Anda..."
+           oninput="document.getElementById('profesi-submit').disabled = !this.value.trim()"
+           onkeydown="if(event.key==='Enter' && this.value.trim()) submitProfesi()" />
+    <button class="search-submit" id="profesi-submit" onclick="submitProfesi()" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
   </div>
 </div>
 
@@ -433,13 +460,6 @@
 
   const questions = [
     {
-      id: "profesi",
-      text: "Apa profesi atau bidang usaha Anda?",
-      short: "Profesi",
-      multi: false,
-      options: ["HR & Rekrutmen", "Marketing & Iklan", "Sales & CRM", "Finance & Akuntansi", "Operasional", "E-commerce", "Konsultan", "Pendidikan", "Properti & Real Estate", "Kesehatan & Klinik", "Restoran & F&B", "Startup & Tech", "Logistik & Pengiriman", "Event Organizer / EO", "Hukum & Legal", "Lainnya"]
-    },
-    {
       id: "ukuran_tim",
       text: "Berapa besar tim atau bisnis Anda?",
       short: "Ukuran tim",
@@ -480,12 +500,41 @@
   let currentStep = 0;
   const feed = document.getElementById("feed");
 
-  // Boot: show first question
-  appendActiveQuestion(0);
+  function getProfesiKey(text) {
+    if (!text) return "Lainnya";
+    const t = text.toLowerCase();
+    if (/\bhr\b|hrd|rekrut|human resource|sdm|personalia/.test(t))          return "HR & Rekrutmen";
+    if (/marketing|iklan|\bads\b|brand|promosi|digital marketing/.test(t))  return "Marketing & Iklan";
+    if (/\bsales\b|\bcrm\b|penjualan|jualan|account executive/.test(t))     return "Sales & CRM";
+    if (/finance|akuntansi|keuangan|akuntan|accounting|pajak|cfo/.test(t))  return "Finance & Akuntansi";
+    if (/operasional|operation|\bops\b|supply chain/.test(t))               return "Operasional";
+    if (/ecommerce|e-commerce|online shop|toko online|shopee|tokopedia/.test(t)) return "E-commerce";
+    if (/konsultan|consulting|konsultasi|advisor/.test(t))                  return "Konsultan";
+    if (/pendidikan|guru|dosen|teacher|sekolah|kampus|tutor|edukasi/.test(t)) return "Pendidikan";
+    if (/properti|real estate|agen properti|developer|perumahan/.test(t))   return "Properti & Real Estate";
+    if (/kesehatan|dokter|klinik|rumah sakit|apoteker|perawat|medis/.test(t)) return "Kesehatan & Klinik";
+    if (/restoran|fnb|f&b|cafe|kafe|kuliner|makanan|minuman|warung/.test(t)) return "Restoran & F&B";
+    if (/startup|tech|\bit\b|teknologi|programmer|developer|software|engineer/.test(t)) return "Startup & Tech";
+    if (/logistik|pengiriman|ekspedisi|kurir|warehouse|gudang|cargo/.test(t)) return "Logistik & Pengiriman";
+    if (/event|organizer|\beo\b|acara|wedding|konser|exhibition/.test(t))   return "Event Organizer / EO";
+    if (/hukum|legal|pengacara|lawyer|notaris|advokat/.test(t))             return "Hukum & Legal";
+    return "Lainnya";
+  }
+
+  function submitProfesi() {
+    const input = document.getElementById("profesi-input");
+    const val = input.value.trim();
+    if (!val) return;
+    answers.profesi = val;
+    input.disabled = true;
+    document.getElementById("profesi-submit").disabled = true;
+    appendActiveQuestion(0);
+  }
 
   function getOptionsForQuestion(q) {
-    if (q.id === "tantangan") return profesiTantanganMap[answers.profesi] || q.options;
-    if (q.id === "tools")     return profesiToolsMap[answers.profesi]     || q.options;
+    const key = getProfesiKey(answers.profesi);
+    if (q.id === "tantangan") return profesiTantanganMap[key] || q.options;
+    if (q.id === "tools")     return profesiToolsMap[key]     || q.options;
     return q.options;
   }
 
