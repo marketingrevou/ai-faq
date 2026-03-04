@@ -57,20 +57,18 @@ class handler(BaseHTTPRequestHandler):
 
 Berikan 3-5 rekomendasi workflow automation yang paling relevan untuk profil ini."""
 
-            with client.messages.stream(
-                model="claude-opus-4-6",
-                max_tokens=16000,
-                thinking={"type": "enabled", "budget_tokens": 8000},
+            response = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=4096,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_profile}],
-            ) as stream:
-                response = stream.get_final_message()
+            )
 
-            text_content = ""
-            for block in response.content:
-                if block.type == "text":
-                    text_content = block.text
-                    break
+            text_content = response.content[0].text if response.content else ""
+
+            if not text_content.strip():
+                self._json({"error": "AI tidak mengembalikan respons. Coba lagi."}, 500)
+                return
 
             workflows = json.loads(text_content)
             self._json({"workflows": workflows}, 200)
