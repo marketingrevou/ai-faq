@@ -57,7 +57,8 @@ Program RevoU AI memiliki modul berikut (gunakan untuk field modul_terkait):
 - Week 9: Agentic AI (AI agents, multi-agent workflows)
 
 Untuk setiap workflow, tambahkan field "modul_terkait": [nomor week yang relevan].
-Contoh: [7, 8] untuk workflow n8n dengan AI. Kosongkan array jika tidak ada yang relevan.
+Aturan: SELALU sertakan Week 7 dan/atau 8 (karena semua workflow menggunakan n8n), PLUS minimal 1 modul dari Week 1-6 atau 9 yang paling relevan dengan domain/skill spesifik workflow tersebut.
+Contoh: [5, 7, 8] untuk workflow n8n dengan prompt engineering. [6, 7, 8] untuk workflow chatbot. [9, 7, 8] untuk workflow agentic.
 
 PENTING: Setiap workflow WAJIB memiliki semua 9 field. Jangan lewatkan langkah_awal, contoh_skenario, atau modul_terkait."""
 

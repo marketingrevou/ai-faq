@@ -284,7 +284,15 @@
     .badge-menengah { background: #fef7e0; color: #b06000; }
     .badge-lanjutan { background: #fce8e6; color: #c5221f; }
 
-    .module-badges { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .75rem; }
+    .module-accordion { margin-top: .75rem; border-top: 1px solid var(--gray-200); }
+    .module-accordion summary {
+      cursor: pointer; list-style: none; font-size: .78rem; font-weight: 600;
+      color: #6d28d9; padding: .55rem 0 .4rem; user-select: none;
+    }
+    .module-accordion summary::-webkit-details-marker { display: none; }
+    .module-accordion summary::before { content: "▶ "; font-size: .65rem; }
+    .module-accordion[open] summary::before { content: "▼ "; }
+    .module-badges { display: flex; flex-wrap: wrap; gap: .35rem; padding: .35rem 0 .2rem; }
     .module-badge  { font-size: .7rem; font-weight: 600; padding: .2rem .55rem; border-radius: 999px;
                      background: #f3e8ff; color: #6d28d9; white-space: nowrap; }
 
@@ -753,13 +761,13 @@
 
     const badgeMap = { "Mudah": "badge-mudah", "Menengah": "badge-menengah", "Lanjutan": "badge-lanjutan" };
     const MODULES = {
-      1: "Future of Work & AI Literacy",
-      2: "Business Analytics & Problem Solving",
-      3: "Data Foundations & EDA",
-      4: "Data Visualization & Communication",
-      5: "AI Foundations & Prompt Engineering",
+      1: "AI Literacy",
+      2: "Business Analytics",
+      3: "Data Foundations",
+      4: "Data Visualization",
+      5: "Prompt Engineering",
       6: "Custom AI Assistants",
-      7: "Workflow Automation Basics (n8n)",
+      7: "Workflow Automation (n8n)",
       8: "AI-Enhanced Automation",
       9: "Agentic AI",
     };
@@ -772,13 +780,6 @@
             <div class="card-name">${w.nama}</div>
             <span class="badge ${badgeMap[w.tingkat_kesulitan] || "badge-menengah"}">${w.tingkat_kesulitan}</span>
           </div>
-          ${(w.modul_terkait?.length)
-            ? `<div class="module-badges">
-                 ${w.modul_terkait.map(n => MODULES[n]
-                   ? `<span class="module-badge">📚 Week ${n}: ${MODULES[n]}</span>`
-                   : "").join("")}
-               </div>`
-            : ""}
           ${w.contoh_skenario ? `<div class="card-scenario">${w.contoh_skenario}</div>` : ""}
           <p class="card-desc">${w.deskripsi}</p>
           <ul class="card-benefits">
@@ -793,6 +794,16 @@
             <span>⏰ ${w.estimasi_waktu_hemat}</span>
             ${(w.tools_dibutuhkan || []).map(t => `<span class="tool-tag">${t}</span>`).join("")}
           </div>
+          ${(w.modul_terkait?.length)
+            ? `<details class="module-accordion">
+                 <summary>Related Module</summary>
+                 <div class="module-badges">
+                   ${w.modul_terkait.map(n => MODULES[n]
+                     ? `<span class="module-badge">W${n} · ${MODULES[n]}</span>`
+                     : "").join("")}
+                 </div>
+               </details>`
+            : ""}
         </div>`).join("")}
       <button class="restart-btn" onclick="location.reload()">↺ Mulai ulang dengan profil berbeda</button>
     `;
