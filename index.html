@@ -791,7 +791,7 @@
             <ol>${w.langkah_awal.map(s => `<li>${s}</li>`).join("")}</ol>
           </div>` : ""}
           <div class="card-footer">
-            <span>⏰ ${w.estimasi_waktu_hemat}</span>
+            <span>⏰ Time Saved: ${w.estimasi_waktu_hemat}</span>
             ${(w.tools_dibutuhkan || []).map(t => `<span class="tool-tag">${t}</span>`).join("")}
           </div>
           ${(w.modul_terkait?.length)
