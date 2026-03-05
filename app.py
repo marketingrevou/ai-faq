@@ -9,6 +9,18 @@ load_dotenv()
 app = Flask(__name__)
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
+MODULES = [
+    {"week": 1,  "title": "Future of Work & AI Literacy",          "keywords": "digital transformation, AI impact, future skills, automation mindset, technology literacy"},
+    {"week": 2,  "title": "Business Analytics & Problem Solving",   "keywords": "analytics, business problem, data-driven decision, metrics, KPI, reporting"},
+    {"week": 3,  "title": "Data Foundations & EDA",                 "keywords": "data, database, structured data, data cleaning, exploratory analysis, spreadsheet"},
+    {"week": 4,  "title": "Data Visualization & Communication",     "keywords": "visualization, dashboard, reporting, charts, storytelling, Google Sheets, Looker Studio"},
+    {"week": 5,  "title": "AI Foundations & Prompt Engineering",    "keywords": "ChatGPT, prompt engineering, LLM, generative AI, zero-shot, few-shot, chain-of-thought, responsible AI, OpenAI"},
+    {"week": 6,  "title": "Custom AI Assistants",                   "keywords": "custom AI chatbot, CustomGPT, no-code AI, knowledge base, AI assistant, chatbot, customer service"},
+    {"week": 7,  "title": "Workflow Automation Basics (n8n)",       "keywords": "n8n, workflow automation, triggers, actions, integrations, auto-reporting, notifications, CRM update"},
+    {"week": 8,  "title": "AI-Enhanced Automation",                 "keywords": "n8n, AI automation, API integration, GPT integration, automated workflows, data pipeline, email automation"},
+    {"week": 9,  "title": "Agentic AI",                             "keywords": "AI agent, autonomous agent, multi-agent, agentic workflow, decision making, lead qualification, knowledge assistant"},
+]
+
 SYSTEM_PROMPT = """Anda adalah ahli automation workflow untuk profesional dan pebisnis Indonesia.
 Tugas Anda: menganalisis profil pengguna dan merekomendasikan 3-5 automation workflow yang relevan
 menggunakan n8n dan ChatGPT/OpenAI API.
@@ -29,14 +41,29 @@ Format setiap workflow:
   "tingkat_kesulitan": "Mudah" | "Menengah" | "Lanjutan",
   "tools_dibutuhkan": ["n8n", "ChatGPT API", "tool lain yang relevan"],
   "langkah_awal": ["Langkah 1", "Langkah 2", "Langkah 3"],
-  "contoh_skenario": "Satu kalimat skenario spesifik berdasarkan profil pengguna"
+  "contoh_skenario": "Satu kalimat skenario spesifik berdasarkan profil pengguna",
+  "modul_terkait": [7, 8]
 }
 
 Aturan tambahan untuk field baru:
 - contoh_skenario WAJIB menyebut profesi pengguna, tantangan utamanya, dan minimal satu tool yang mereka gunakan — bukan skenario generik
 - langkah_awal WAJIB berisi tepat 3 langkah pendek dan konkret yang menggunakan tools yang sudah dimiliki pengguna
 
-PENTING: Setiap workflow WAJIB memiliki semua 8 field. Jangan lewatkan langkah_awal atau contoh_skenario."""
+Program RevoU AI memiliki modul berikut (gunakan untuk field modul_terkait):
+- Week 1: Future of Work & AI Literacy
+- Week 2: Business Analytics & Problem Solving
+- Week 3: Data Foundations & EDA
+- Week 4: Data Visualization & Communication
+- Week 5: AI Foundations & Prompt Engineering (ChatGPT, prompt engineering, OpenAI)
+- Week 6: Custom AI Assistants (CustomGPT, no-code chatbot)
+- Week 7: Workflow Automation Basics — n8n (triggers, actions, integrations)
+- Week 8: AI-Enhanced Automation (n8n + AI, API integration)
+- Week 9: Agentic AI (AI agents, multi-agent workflows)
+
+Untuk setiap workflow, tambahkan field "modul_terkait": [nomor week yang relevan].
+Contoh: [7, 8] untuk workflow n8n dengan AI. Kosongkan array jika tidak ada yang relevan.
+
+PENTING: Setiap workflow WAJIB memiliki semua 9 field. Jangan lewatkan langkah_awal, contoh_skenario, atau modul_terkait."""
 
 
 @app.route("/")
