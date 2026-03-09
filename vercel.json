@@ -1,8 +1,11 @@
 {
   "rewrites": [
-    { "source": "/analyze", "destination": "/api/analyze" }
+    { "source": "/analyze", "destination": "/api/analyze" },
+    { "source": "/submit-lead", "destination": "/api/submit-lead" },
+    { "source": "/ac-932026", "destination": "/index.html" }
   ],
   "functions": {
-    "api/analyze.py": { "maxDuration": 60 }
+    "api/analyze.py": { "maxDuration": 60 },
+    "api/submit-lead.py": { "maxDuration": 10 }
   }
 }
