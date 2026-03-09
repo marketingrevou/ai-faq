@@ -1,13 +1,33 @@
 import os
 import json
+from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 from anthropic import Anthropic
 from dotenv import load_dotenv
+import gspread
+from google.oauth2.service_account import Credentials
 
 load_dotenv()
 
 app = Flask(__name__)
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+_GS_CREDS_RAW = os.environ.get("GOOGLE_SERVICE_ACCOUNT_CREDENTIALS", "")
+GOOGLE_SHEETS_ID = os.environ.get("GOOGLE_SHEETS_ID", "")
+
+print(f"[startup] GOOGLE_SHEETS_ID loaded: {bool(GOOGLE_SHEETS_ID)} → {GOOGLE_SHEETS_ID}")
+print(f"[startup] GOOGLE_SERVICE_ACCOUNT_CREDENTIALS loaded: {bool(_GS_CREDS_RAW)}")
+
+def _append_lead(row: list):
+    """Append a row to the Leads sheet using the service account credentials."""
+    creds_info = json.loads(_GS_CREDS_RAW)
+    creds = Credentials.from_service_account_info(
+        creds_info,
+        scopes=["https://www.googleapis.com/auth/spreadsheets"],
+    )
+    gc = gspread.authorize(creds)
+    ws = gc.open_by_key(GOOGLE_SHEETS_ID).sheet1
+    ws.append_row(row, value_input_option="USER_ENTERED")
 
 MODULES = [
     {"week": 1,  "title": "Future of Work & AI Literacy",          "keywords": "digital transformation, AI impact, future skills, automation mindset, technology literacy"},
@@ -72,9 +92,45 @@ def index():
     return send_from_directory(".", "index.html")
 
 
+@app.route("/staff-access")
+def staff_access():
+    return send_from_directory(".", "index.html")
+
+
 @app.route("/images/<path:filename>")
 def images(filename):
     return send_from_directory("images", filename)
+
+
+@app.route("/submit-lead", methods=["POST"])
+def submit_lead():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Data tidak valid"}), 400
+
+    nama    = data.get("nama", "").strip()
+    email   = data.get("email", "").strip()
+    wa      = data.get("wa", "").strip()
+    profesi = data.get("profesi", "").strip()
+
+    print(f"[submit-lead] received: nama={nama}, email={email}, wa={wa}, profesi={profesi}")
+    print(f"[submit-lead] creds ok={bool(_GS_CREDS_RAW)}, sheet_id ok={bool(GOOGLE_SHEETS_ID)}")
+
+    if not nama or not email:
+        return jsonify({"error": "Nama dan email wajib diisi"}), 400
+
+    if _GS_CREDS_RAW and GOOGLE_SHEETS_ID:
+        try:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            _append_lead([timestamp, nama, email, wa, profesi])
+            print(f"[submit-lead] sheet write OK")
+        except Exception as e:
+            print(f"[submit-lead] Google Sheets error: {e}")
+            return jsonify({"success": True, "sheet_error": str(e)})
+    else:
+        print(f"[submit-lead] skipping sheet write — env vars missing")
+
+    return jsonify({"success": True})
 
 
 @app.route("/analyze", methods=["POST"])

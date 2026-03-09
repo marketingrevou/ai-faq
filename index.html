@@ -356,6 +356,112 @@
     }
     .restart-btn:hover { color: var(--gray-700); }
 
+    /* ── GATE OVERLAY ── */
+    #gate-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background:
+        linear-gradient(rgba(6, 147, 227, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 147, 227, 0.07) 1px, transparent 1px),
+        radial-gradient(ellipse at 50% 45%, rgba(6, 147, 227, 0.22) 0%, #ffffff 68%);
+      background-size: 52px 52px, 52px 52px, 100% 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      transition: opacity 0.3s ease;
+    }
+
+    .gate-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(6, 147, 227, 0.2);
+      border-radius: 16px;
+      padding: 2rem 2rem 1.75rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 24px rgba(6, 147, 227, 0.12), 0 1px 6px rgba(0,0,0,0.08);
+    }
+
+    .gate-logo {
+      height: 36px;
+      width: auto;
+      margin-bottom: 1.25rem;
+      display: block;
+    }
+
+    .gate-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #05314A 0%, #0B74B0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .5rem;
+    }
+
+    .gate-subtitle {
+      font-size: .88rem;
+      color: var(--gray-700);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .gate-field { margin-bottom: 1rem; }
+
+    .gate-label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: .35rem;
+    }
+    .gate-label .required { color: var(--red); }
+    .gate-label .optional { font-weight: 400; color: var(--gray-500); }
+
+    .gate-input {
+      width: 100%;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      padding: .65rem .9rem;
+      font-size: .9rem;
+      font-family: 'Red Hat Display', 'Segoe UI', Arial, sans-serif;
+      color: var(--gray-900);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .gate-input:focus { border-color: var(--blue); }
+    .gate-input::placeholder { color: var(--gray-400); }
+
+    .gate-btn {
+      width: 100%;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: .75rem 1.25rem;
+      font-size: .92rem;
+      font-weight: 600;
+      font-family: 'Red Hat Display', 'Segoe UI', Arial, sans-serif;
+      cursor: pointer;
+      transition: opacity .15s;
+      margin-top: .5rem;
+    }
+    .gate-btn:hover:not(:disabled) { opacity: .88; }
+    .gate-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .gate-error {
+      background: #fce8e6;
+      border: 1px solid #f28b82;
+      border-radius: 8px;
+      padding: .6rem .85rem;
+      font-size: .82rem;
+      color: #c5221f;
+      margin-bottom: .5rem;
+    }
+
     /* ── ANIMATIONS ── */
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -438,7 +544,31 @@
 </head>
 <body>
 
-<div class="main">
+<div id="gate-overlay">
+  <div class="gate-card">
+    <img src="/images/trilogo.png" alt="RevoU" class="gate-logo" />
+    <h2 class="gate-title">Workflow Automation Finder</h2>
+    <p class="gate-subtitle">Isi form berikut untuk mendapatkan rekomendasi workflow automation yang dipersonalisasi untukmu.</p>
+    <form id="lead-form" onsubmit="submitLead(event)">
+      <div class="gate-field">
+        <label class="gate-label">Nama Lengkap <span class="required">*</span></label>
+        <input type="text" id="lead-nama" class="gate-input" required placeholder="Nama lengkap Anda" />
+      </div>
+      <div class="gate-field">
+        <label class="gate-label">Email <span class="required">*</span></label>
+        <input type="email" id="lead-email" class="gate-input" required placeholder="email@contoh.com" />
+      </div>
+      <div class="gate-field">
+        <label class="gate-label">No. WhatsApp <span class="required">*</span></label>
+        <input type="tel" id="lead-wa" class="gate-input" required placeholder="08xxxxxxxxxx" />
+      </div>
+      <div id="lead-error" class="gate-error" style="display:none;"></div>
+      <button type="submit" class="gate-btn" id="lead-submit-btn">Mulai Eksplorasi →</button>
+    </form>
+  </div>
+</div>
+
+<div class="main" id="main-content" style="visibility:hidden;">
 <div class="hero">
   <div>
     <img src="/images/trilogo.png" alt="RevoU x BINUS x GreatNusa" style="height: 40px; width: auto;" />
@@ -478,6 +608,51 @@
 </div>
 
 <script>
+  // ── GATE LOGIC ──
+  (function initGate() {
+    // Admin URL: set session and redirect to clean URL
+    if (window.location.pathname === '/ac-9326') {
+      sessionStorage.setItem('revou_access', 'admin');
+      window.location.replace('/');
+      return;
+    }
+    // Already authenticated: remove gate immediately (DOM is ready here)
+    if (sessionStorage.getItem('revou_access')) {
+      const overlay = document.getElementById('gate-overlay');
+      if (overlay) overlay.remove();
+      document.getElementById('main-content').style.visibility = '';
+    }
+  })();
+
+  function removeGate() {
+    const overlay = document.getElementById('gate-overlay');
+    if (!overlay) return;
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.remove();
+      document.getElementById('main-content').style.visibility = '';
+    }, 300);
+  }
+
+  async function submitLead(event) {
+    event.preventDefault();
+    const nama  = document.getElementById('lead-nama').value.trim();
+    const email = document.getElementById('lead-email').value.trim();
+    const wa    = document.getElementById('lead-wa').value.trim();
+    const errEl = document.getElementById('lead-error');
+    const btn   = document.getElementById('lead-submit-btn');
+
+    errEl.style.display = 'none';
+
+    // Store lead data in sessionStorage — will be sent to Google Sheets
+    // together with profesi once the user fills in the search bar
+    sessionStorage.setItem('revou_access', 'user');
+    sessionStorage.setItem('lead_nama',  nama);
+    sessionStorage.setItem('lead_email', email);
+    sessionStorage.setItem('lead_wa',    wa);
+    removeGate();
+  }
+
   const profesiToolsMap = {
     "HR & Rekrutmen":         ["WhatsApp", "Gmail / Outlook", "Google Sheets", "Notion", "Slack", "Trello / Asana", "Zoom / Google Meet", "LinkedIn", "BambooHR / Mekari", "Belum pakai tools khusus"],
     "Marketing & Iklan":      ["Instagram / Meta Ads", "Gmail", "Google Sheets", "Canva", "Mailchimp / Klaviyo", "Notion", "Google Analytics", "TikTok Ads", "Hootsuite / Buffer", "Belum pakai tools khusus"],
@@ -586,6 +761,21 @@
     answers.profesi = val;
     input.disabled = true;
     document.getElementById("profesi-submit").disabled = true;
+
+    // Send complete lead row to Google Sheets (only for user access, not admin)
+    if (sessionStorage.getItem('revou_access') === 'user') {
+      fetch('/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nama:    sessionStorage.getItem('lead_nama')  || '',
+          email:   sessionStorage.getItem('lead_email') || '',
+          wa:      sessionStorage.getItem('lead_wa')    || '',
+          profesi: val,
+        })
+      }).then(r => r.json()).then(d => { if (d.sheet_error) console.warn('[submit-lead] sheet error:', d.sheet_error); }).catch(console.error);
+    }
+
     appendActiveQuestion(0);
   }
 
