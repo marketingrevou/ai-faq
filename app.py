@@ -92,7 +92,7 @@ def index():
     return send_from_directory(".", "index.html")
 
 
-@app.route("/staff-access")
+@app.route("/ac-932026")
 def staff_access():
     return send_from_directory(".", "index.html")
 
