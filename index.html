@@ -610,6 +610,11 @@
 <script>
   // ── GATE LOGIC ──
   (function initGate() {
+    // Capture utm_ops from URL and persist in sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmOps = urlParams.get('utm_ops');
+    if (utmOps) sessionStorage.setItem('utm_ops', utmOps);
+
     // Admin URL: set session and redirect to clean URL
     if (window.location.pathname === '/ac-932026') {
       sessionStorage.setItem('revou_access', 'admin');
@@ -772,6 +777,7 @@
           email:   sessionStorage.getItem('lead_email') || '',
           wa:      sessionStorage.getItem('lead_wa')    || '',
           profesi: val,
+          utm_ops: sessionStorage.getItem('utm_ops')    || '',
         })
       }).then(r => r.json()).then(d => { if (d.sheet_error) console.warn('[submit-lead] sheet error:', d.sheet_error); }).catch(console.error);
     }

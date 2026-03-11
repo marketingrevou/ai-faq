@@ -31,6 +31,7 @@ class handler(BaseHTTPRequestHandler):
             email   = data.get("email", "").strip()
             wa      = data.get("wa", "").strip()
             profesi = data.get("profesi", "").strip()
+            utm_ops = data.get("utm_ops", "").strip()
 
             if not nama or not email:
                 self._json({"error": "Nama dan email wajib diisi"}, 400)
@@ -39,7 +40,7 @@ class handler(BaseHTTPRequestHandler):
             if _GS_CREDS_RAW and GOOGLE_SHEETS_ID:
                 try:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    _append_lead([timestamp, nama, email, wa, profesi])
+                    _append_lead([timestamp, nama, email, wa, profesi, utm_ops])
                 except Exception as e:
                     self._json({"success": True, "sheet_error": str(e)}, 200)
                     return
