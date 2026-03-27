@@ -27,11 +27,15 @@ class handler(BaseHTTPRequestHandler):
             body = self.rfile.read(length)
             data = json.loads(body)
 
-            nama    = data.get("nama", "").strip()
-            email   = data.get("email", "").strip()
-            wa      = data.get("wa", "").strip()
-            profesi = data.get("profesi", "").strip()
-            utm_ops = data.get("utm_ops", "").strip()
+            nama         = data.get("nama", "").strip()
+            email        = data.get("email", "").strip()
+            wa           = data.get("wa", "").strip()
+            profesi      = data.get("profesi", "").strip()
+            utm_ops      = data.get("utm_ops", "").strip()
+            utm_source   = data.get("utm_source", "").strip()
+            utm_campaign = data.get("utm_campaign", "").strip()
+            utm_medium   = data.get("utm_medium", "").strip()
+            utm_content  = data.get("utm_content", "").strip()
 
             if not nama or not email:
                 self._json({"error": "Nama dan email wajib diisi"}, 400)
@@ -40,7 +44,7 @@ class handler(BaseHTTPRequestHandler):
             if _GS_CREDS_RAW and GOOGLE_SHEETS_ID:
                 try:
                     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    _append_lead([timestamp, nama, email, wa, profesi, utm_ops])
+                    _append_lead([timestamp, nama, email, wa, profesi, utm_ops, utm_source, utm_campaign, utm_medium, utm_content])
                 except Exception as e:
                     self._json({"success": True, "sheet_error": str(e)}, 200)
                     return

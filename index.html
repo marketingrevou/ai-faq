@@ -610,10 +610,18 @@
 <script>
   // ── GATE LOGIC ──
   (function initGate() {
-    // Capture utm_ops from URL and persist in sessionStorage
+    // Capture UTM params from URL and persist in sessionStorage
     const urlParams = new URLSearchParams(window.location.search);
     const utmOps = urlParams.get('utm_ops');
     if (utmOps) sessionStorage.setItem('utm_ops', utmOps);
+    const utmSource   = urlParams.get('utm_source');
+    const utmCampaign = urlParams.get('utm_campaign');
+    const utmMedium   = urlParams.get('utm_medium');
+    const utmContent  = urlParams.get('utm_content');
+    if (utmSource)   sessionStorage.setItem('utm_source',   utmSource);
+    if (utmCampaign) sessionStorage.setItem('utm_campaign', utmCampaign);
+    if (utmMedium)   sessionStorage.setItem('utm_medium',   utmMedium);
+    if (utmContent)  sessionStorage.setItem('utm_content',  utmContent);
 
     // Admin URL: set session and redirect to clean URL
     if (window.location.pathname === '/ac-932026') {
@@ -777,7 +785,11 @@
           email:   sessionStorage.getItem('lead_email') || '',
           wa:      sessionStorage.getItem('lead_wa')    || '',
           profesi: val,
-          utm_ops: sessionStorage.getItem('utm_ops')    || '',
+          utm_ops:      sessionStorage.getItem('utm_ops')      || '',
+          utm_source:   sessionStorage.getItem('utm_source')   || '',
+          utm_campaign: sessionStorage.getItem('utm_campaign') || '',
+          utm_medium:   sessionStorage.getItem('utm_medium')   || '',
+          utm_content:  sessionStorage.getItem('utm_content')  || '',
         })
       }).then(r => r.json()).then(d => { if (d.sheet_error) console.warn('[submit-lead] sheet error:', d.sheet_error); }).catch(console.error);
     }
