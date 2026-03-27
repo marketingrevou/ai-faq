@@ -356,6 +356,54 @@
     }
     .restart-btn:hover { color: var(--gray-700); }
 
+    /* ── WHATSAPP CTA ── */
+    .wa-cta-section {
+      margin-top: 2rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #e7f9ee 0%, #d4f5e2 100%);
+      border: 1px solid rgba(52, 168, 83, 0.2);
+      padding: 1.5rem 1.75rem;
+      text-align: center;
+    }
+    .wa-cta-eyebrow {
+      font-size: .74rem;
+      font-weight: 700;
+      color: #137333;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: .5rem;
+    }
+    .wa-cta-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: .4rem;
+      line-height: 1.4;
+    }
+    .wa-cta-body {
+      font-size: .85rem;
+      color: var(--gray-700);
+      margin-bottom: 1.25rem;
+      line-height: 1.55;
+    }
+    .wa-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #25D366;
+      color: #fff;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: .92rem;
+      padding: .7rem 1.5rem;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, transform .1s;
+    }
+    .wa-cta-btn:hover { background: #1ebe5d; transform: translateY(-1px); }
+
     /* ── GATE OVERLAY ── */
     #gate-overlay {
       position: fixed;
@@ -957,6 +1005,30 @@
     }
   }
 
+  const WA_NUMBER = "6281228707520";
+
+  function buildWaCta() {
+    const nama    = sessionStorage.getItem('lead_nama') || '';
+    const profesi = answers.profesi || '';
+    const msg = nama
+      ? `Halo kak, saya ${nama}${profesi ? `, bekerja sebagai ${profesi}` : ''}. Saya baru coba tool workflow automation-nya RevoU dan tertarik belajar lebih lanjut soal program Applied AI & Analytics. Bisa cerita lebih lanjut?`
+      : `Halo, saya tertarik belajar lebih lanjut soal program Applied AI & Analytics RevoU. Bisa cerita lebih lanjut?`;
+    const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+    return `
+      <div class="wa-cta-section">
+        <div class="wa-cta-eyebrow">Langkah selanjutnya</div>
+        <div class="wa-cta-title">Tertarik mengimplementasikan workflow ini di tempat kerja Anda?</div>
+        <div class="wa-cta-body">
+          Program <strong>Applied AI & Analytics</strong> RevoU mengajarkan cara membangun<br>
+          automation seperti ini dari nol — tanpa harus jadi programmer.
+        </div>
+        <a class="wa-cta-btn" href="${url}" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.116 1.528 5.845L.057 23.882a.5.5 0 0 0 .61.61l6.037-1.471A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.9 0-3.681-.513-5.21-1.408l-.374-.22-3.882.945.963-3.795-.242-.389A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          Konsultasi Gratis via WhatsApp
+        </a>
+      </div>`;
+  }
+
   function renderResults(workflows) {
     const section = document.createElement("div");
     section.className = "results-section";
@@ -1013,6 +1085,7 @@
                </details>`
             : ""}
         </div>`).join("")}
+      ${buildWaCta()}
       <button class="restart-btn" onclick="location.reload()">↺ Mulai ulang dengan profil berbeda</button>
     `;
 
