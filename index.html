@@ -729,10 +729,15 @@
     sessionStorage.setItem('lead_nama',  nama);
     sessionStorage.setItem('lead_email', email);
     sessionStorage.setItem('lead_wa',    wa);
+
+    // Generate event_id for pixel ↔ CAPI deduplication
+    const eventId = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
+    sessionStorage.setItem('prospect_event_id', eventId);
+
     removeGate();
 
-    // Fire Meta Pixel custom event
-    if (typeof fbq === 'function') fbq('trackCustom', 'Prospect');
+    // Fire Meta Pixel custom event with event_id for deduplication
+    if (typeof fbq === 'function') fbq('trackCustom', 'Prospect', {}, { eventID: eventId });
   }
 
   const profesiToolsMap = {
@@ -859,6 +864,7 @@
           utm_campaign: sessionStorage.getItem('utm_campaign') || '',
           utm_medium:   sessionStorage.getItem('utm_medium')   || '',
           utm_content:  sessionStorage.getItem('utm_content')  || '',
+          event_id:     sessionStorage.getItem('prospect_event_id') || '',
         })
       }).then(r => r.json()).then(d => { if (d.sheet_error) console.warn('[submit-lead] sheet error:', d.sheet_error); }).catch(console.error);
     }
