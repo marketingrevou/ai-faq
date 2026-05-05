@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 import gspread
 from google.oauth2.service_account import Credentials
@@ -10,12 +10,15 @@ from google.oauth2.service_account import Credentials
 load_dotenv()
 
 app = Flask(__name__)
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
+)
 
 _GS_CREDS_RAW = os.environ.get("GOOGLE_SERVICE_ACCOUNT_CREDENTIALS", "")
 GOOGLE_SHEETS_ID = os.environ.get("GOOGLE_SHEETS_ID", "")
 
-print(f"[startup] GOOGLE_SHEETS_ID loaded: {bool(GOOGLE_SHEETS_ID)} → {GOOGLE_SHEETS_ID}")
+print(f"[startup] GOOGLE_SHEETS_ID loaded: {bool(GOOGLE_SHEETS_ID)} -> {GOOGLE_SHEETS_ID}")
 print(f"[startup] GOOGLE_SERVICE_ACCOUNT_CREDENTIALS loaded: {bool(_GS_CREDS_RAW)}")
 
 def _append_lead(row: list):
@@ -151,23 +154,23 @@ def analyze():
 Berikan tepat 3 rekomendasi workflow automation yang paling relevan untuk profil ini."""
 
     try:
-        with client.messages.stream(
-            model="claude-opus-4-6",
+        response = client.chat.completions.create(
+            model="anthropic/claude-opus-4-5",
             max_tokens=16000,
-            thinking={"type": "enabled", "budget_tokens": 8000},
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_profile}],
-        ) as stream:
-            response = stream.get_final_message()
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_profile},
+            ],
+        )
+        text_content = response.choices[0].message.content or ""
 
-        # Extract text content (skip thinking blocks)
-        text_content = ""
-        for block in response.content:
-            if block.type == "text":
-                text_content = block.text
-                break
+        # Strip markdown code block wrappers if model adds them
+        cleaned = text_content.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[-1]
+            cleaned = cleaned.rsplit("```", 1)[0].strip()
 
-        workflows = json.loads(text_content)
+        workflows = json.loads(cleaned)
         return jsonify({"workflows": workflows})
 
     except json.JSONDecodeError as e:

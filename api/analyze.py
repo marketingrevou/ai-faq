@@ -1,9 +1,12 @@
 import os
 import json
 from http.server import BaseHTTPRequestHandler
-from anthropic import Anthropic
+from openai import OpenAI
 
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
+)
 
 MODULES = [
     {"week": 1,  "title": "Future of Work & AI Literacy",          "keywords": "digital transformation, AI impact, future skills, automation mindset, technology literacy"},
@@ -86,14 +89,16 @@ class handler(BaseHTTPRequestHandler):
 
 Berikan tepat 3 rekomendasi workflow automation yang paling relevan untuk profil ini."""
 
-            response = client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            response = client.chat.completions.create(
+                model="anthropic/claude-haiku-4-5",
                 max_tokens=2048,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_profile}],
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_profile},
+                ],
             )
 
-            text_content = response.content[0].text if response.content else ""
+            text_content = response.choices[0].message.content or ""
 
             if not text_content.strip():
                 self._json({"error": "AI tidak mengembalikan respons. Coba lagi."}, 500)
